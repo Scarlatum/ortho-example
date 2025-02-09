@@ -1,22 +1,30 @@
 import { compilerOptions } from "./tsconfig.json";
 import { defineConfig } from "vite";
 
-const headers = new Headers();
-
-headers.set("Cross-Origin-Opener-Policy-Only", "same-origin")
-headers.set("Cross-Origin-Embedder-Policy-Only", "require-corp");
-headers.set("Access-Control-Allow-Origin", "http://localhost:8000");
+import wasm from "vite-plugin-wasm"
 
 export default defineConfig({
+  plugins: [ wasm() ],
+  worker: {
+    format: "es"
+  },
+  resolve: {
+    alias: {
+      '~': `${ import.meta.dirname }/source`,
+    }
+  },
   build: {
     target: compilerOptions.target,
+    minify: false,
     rollupOptions: {
+      preserveEntrySignatures: "exports-only",
       output: {
+        esModule: true,
         manualChunks: path => {
-          if (path.includes("node_modules")) {
-            return "vendor";
-          } else if (path.includes("packages")) {
+          if (path.includes("packages")) {
             return "packages";
+          } else if (path.includes("node_modules")) {
+            return "vendor";
           } else {
             return "app";
           }
@@ -28,8 +36,8 @@ export default defineConfig({
     port: 8000,
     cors: true,
     headers: {
-      "Cross-Origin-Opener-Policy-Only": "same-origin",
-      "Cross-Origin-Embedder-Policy-Only": "require-corp",
+      "Cross-Origin-Embedder-Policy": "require-corp",
+      "Cross-Origin-Opener-Policy": "same-origin",
     }
   }
 })
