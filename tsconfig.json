@@ -38,5 +38,9 @@
     "source", 
     "source/vite-env.d.ts", 
     "source/main.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "packages"
   ]
 }

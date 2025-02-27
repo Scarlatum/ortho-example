@@ -1,44 +1,50 @@
+import "./assets/css/base.css";
+
+import { Renderer, Scene } from "ortho"
+import { EntityType, PhyQueueElement } from "./workers/phy.shared"
+
+import BaseScene from "./scenes/cyber.scene"
+
+const phy = new Worker(new URL("./workers/phy.worker.ts", import.meta.url), { type: "module" });
+const phyQueue = new Set<PhyQueueElement>();
 
 import "./surface.setup";
 
-import { Renderer } from "ortho"
-import BaseScene from "./scenes/cyber/cyber.scene"
-import { EntityType } from "./workers/phy.worker";
-
-import phyWorker from "./workers/phy.worker.ts?worker";
-
 declare const surface: HTMLCanvasElement;
 
-export const phy = new phyWorker();
-export const phyQueue = new Set<{ type: EntityType; payload: unknown; buffer?: ArrayBufferLike }>();
-
-const workersStatus = new Int32Array(new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT));
-
-const [ _adapter, device, context ] = await Renderer.getSetup(surface);
+const [ device, adapter, context ] = await Renderer.getSetup(surface);
 
 const renderer = new Renderer(device, context);
 const scene = new BaseScene(renderer);
 
-await scene.setupScene();
+// Scene.LIGHT_PASS = false;
+// Scene.SHADOW_PASS = false;
 
-renderer.addScene(scene);
-renderer.render(0);
+phy.addEventListener("message", async event => {
 
-const signal = () => {
+  switch (event.data.spec) {
+    case "preparations":
+    
+      scene.hitpos = event.data.payload;
 
-  phy.postMessage(workersStatus);
+      phy.postMessage(phyQueue);
 
-  if ( workersStatus.every(x => x) ) {
-    phy.postMessage(phyQueue);
+      break;
+    case "ready":
+
+      phy.postMessage({ spec: "preparations", payload: {
+        position: scene.actor.camera.position,
+        direction: scene.actor.camera.direction,
+      }});
+
+      break;
   }
 
-  else requestAnimationFrame(signal);
+});
 
-}
+scene.setupScene().then(x => renderer.addScene(x).render());
 
-requestAnimationFrame(signal);
-
-export function createPhyBuffer<P>(type: EntityType, size: number = 0, payload?: P) {
+function createPhyBuffer<P>(type: EntityType, size: number = 0, payload?: P) {
 
   const buffer = new SharedArrayBuffer(size);
 
@@ -47,3 +53,5 @@ export function createPhyBuffer<P>(type: EntityType, size: number = 0, payload?:
   return new Float32Array(buffer);
 
 }
+
+export { phy, phyQueue, createPhyBuffer };

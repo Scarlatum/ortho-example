@@ -1,4 +1,3 @@
-import { compilerOptions } from "./tsconfig.json";
 import { defineConfig } from "vite";
 
 import wasm from "vite-plugin-wasm"
@@ -14,16 +13,14 @@ export default defineConfig({
     }
   },
   build: {
-    target: compilerOptions.target,
+    target: "ESNext",
     minify: false,
     rollupOptions: {
       preserveEntrySignatures: "exports-only",
       output: {
         esModule: true,
         manualChunks: path => {
-          if (path.includes("packages")) {
-            return "packages";
-          } else if (path.includes("node_modules")) {
+          if (path.includes("node_modules")) {
             return "vendor";
           } else {
             return "app";
@@ -33,7 +30,7 @@ export default defineConfig({
     }
   },
   server: {
-    port: 8000,
+    port: 3000,
     cors: true,
     headers: {
       "Cross-Origin-Embedder-Policy": "require-corp",

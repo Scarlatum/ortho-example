@@ -1,20 +1,37 @@
 declare const surface: HTMLCanvasElement;
 
-surface.width = innerWidth;
-surface.height = innerHeight;
+surface.height = (surface.width = innerWidth) / (21 / 9);
 
-window.addEventListener("click", () => {
+// surface.height = innerHeight;
+// surface.width = innerWidth;
+
+addEventListener("click", () => {
   surface.addEventListener("mouseenter", () => {
     try {
       surface.requestPointerLock();
-      surface.setPointerCapture(0);
     } catch(e) {
       console.warn(e)
     }
   });
 }, { once: true });
 
-window.addEventListener("resize", () => {
-  surface.width = innerWidth;
-  surface.height = innerHeight;
+addEventListener("resize", () => {
+  
+  surface.height = (surface.width = innerWidth) / (21 / 9);
+
+  // surface.height = innerHeight;
+  // surface.width = innerWidth;
+
 });
+
+addEventListener("keydown", event => {
+  if (event.key === "\\" ) {
+
+    var link = document.createElement('a');
+
+    link.href = (context.canvas as HTMLCanvasElement).toDataURL();
+    link.download = `${ Date.now() }.ortho.png`
+    link.click();
+
+  }
+})
