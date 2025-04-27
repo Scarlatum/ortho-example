@@ -24,7 +24,6 @@ export async function container(
     shadow: {
       cast: true,
       recieve: true,
-      cascade: LightCascade.Close | LightCascade.Near | LightCascade.Far | LightCascade.Distant,
     },
   });
 
@@ -33,7 +32,7 @@ export async function container(
     Float32Array.BYTES_PER_ELEMENT * 7 * CONTAINER_QUANTITY, 
   );
 
-  scene.drawQueue.add(entity.mesh);
+  scene.add(entity.mesh);
   scene.onpass.add(() => {
 
     for ( const [ model, index ] of entity.mesh.writeModels() ) {

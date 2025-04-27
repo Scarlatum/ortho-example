@@ -61,7 +61,7 @@ export default async function(
   payload: ThornsPayload
 ) {
 
-  const terrainMesh = scene.meshes.get("terrain")!;
+  let terrainMesh = scene.meshes.get("terrain")!;
 
   const vertexes = terrainMesh.data.vertexes.deref();
 
@@ -75,6 +75,8 @@ export default async function(
       ;
 
     getPositions(vertexes, model, payload, 300);
+
+    scene.meshes.delete("terrain");
 
   }
 
@@ -136,6 +138,6 @@ export default async function(
 
   });
 
-  scene.drawQueue.add(entity.mesh);
+  scene.add(entity.mesh);
 
 }

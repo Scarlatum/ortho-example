@@ -1,4 +1,5 @@
-import { ProceduredMaterial, Renderer, Scene, Ortho, BlurPass } from "ortho"
+import { ProceduredMaterial, Renderer, Scene, Ortho } from "ortho"
+import { parallelFetch } from "ortho/source/utils/networking.utils.ts"
 
 import { latern } from "~/entities/latern.entity"
 import { lstr as LSTR } from "~/entities/lstr.entity";
@@ -11,9 +12,9 @@ import { container } from "~/entities/container/container.model";
 import pillars from "~/entities/pillars/pillars.model";
 import thorns from "~/entities/thorns/thorns.model";
 
-import { ambient, warpRange } from "./ambient.sfx";
+import { ambient } from "./ambient.sfx";
 import { drone } from "~/entities/drone/drone.model";
-import { TextureContainer } from "ortho/source/entity/creation.entity";
+import { Creation } from "ortho/source/entity/creation.entity";
 
 type AssetLabels = "audio" | "mesh" | "texture";
 
@@ -34,10 +35,10 @@ export default class BasicScene extends Scene {
     // Textures
     "texture::lstr::diffuse": new URL("~/assets/textures/lstr.png", import.meta.url),
     "texture::fklr::diffuse": new URL("~/assets/textures/fklr.png", import.meta.url),
-    "texture::banr::diffuse": new URL("~/assets/textures/banner.png", import.meta.url),
+    "texture::banr::diffuse": new URL("~/assets/textures/banners/002.png", import.meta.url),
+    // "texture::car::diffuse": new URL("~/assets/textures/car.png", import.meta.url),
+		// "texture::terrain::diffuse": new URL("~/assets/textures/terrain.webp", import.meta.url),
   } satisfies Record<`${ AssetLabels }::${ string }`, URL>
-
-  public phyQueue = new Set<Function>();
 
   private treePositions = Array<Ortho.vec3>();
   private spikePositions = Array<Ortho.vec3>();
@@ -48,7 +49,7 @@ export default class BasicScene extends Scene {
 
     super(renderer, [
       new ProceduredMaterial(0, /* wgsl */`
-        color = pow(textureSample(texture, textureSampler, in.uv).rgb, vec3f(2.0));
+        color = textureSample(texture, textureSampler, in.uv).rgb;
       `),
       new ProceduredMaterial(1, /* wgsl */`
         color = vec3f(0.75);
@@ -57,7 +58,7 @@ export default class BasicScene extends Scene {
         color = textureSample(
           texture, 
           textureSampler, 
-          fract(in.uv * vec2f(10, 120))
+          fract(in.uv * 25.0)
         ).rgb;
       `),
     ], [
@@ -80,27 +81,18 @@ export default class BasicScene extends Scene {
 
   override async setupScene() {
 
-    const resourses = new Set(await Promise.all(
-      Object.entries(BasicScene.resources).map(async ([ name, url ]) => {
-        return {
-          name: name as keyof typeof BasicScene.resources,
-          res: await fetch(url).then(x => x.arrayBuffer())
-        };
-      })
-    ));
+    const resourses = await parallelFetch(Object.entries(BasicScene.resources))
 
     const queue = Array<Promise<any>>();
 
-    { // TODO: Пока дрон без меша.
-      drone(new ArrayBuffer(0), this);
-    }
+    const flkr_meshes = Array() as Parameters<typeof FKLR>[1];
+    const lstr_meshes = Array() as Parameters<typeof LSTR>[1];
 
-    const flkr_data = Array() as [ ArrayBuffer, ArrayBuffer ];
-    const lstr_data = Array() as [ ArrayBuffer, ArrayBuffer ];
-
-    const flkr_textures = {} as TextureContainer;
-    const lstr_textures = {} as TextureContainer;
-    const banr_textures = {} as TextureContainer;
+    const flkr_textures = Creation.createTextureContainer();
+    const lstr_textures = Creation.createTextureContainer();
+    const banr_textures = Creation.createTextureContainer();
+    // const car_textures  = Creation.createTextureContainer();
+		// const terrain_textures = Creation.createTextureContainer();
 
     for ( const entry of resourses ) {
       switch (entry.name) {
@@ -116,6 +108,14 @@ export default class BasicScene extends Scene {
           await Scene.setTexture(entry.res, banr_textures, "diffuse"); 
           resourses.delete(entry);
           break;
+        // case "texture::car::diffuse":
+        //   await Scene.setTexture(entry.res, car_textures, "diffuse"); 
+        //   resourses.delete(entry);
+        //   break;
+				// case "texture::terrain::diffuse":
+				// 	await Scene.setTexture(entry.res, terrain_textures, "diffuse");
+				// 	resourses.delete(entry);
+				// 	break;
       }
     }
 
@@ -128,23 +128,23 @@ export default class BasicScene extends Scene {
           resourses.delete(entry);
           break;
         case "mesh::car":
-          cars(Symbol("car mesh"), entry.res, this);
+          cars(this, Symbol("car mesh"), entry.res, null);
           resourses.delete(entry);
           break;
         case "mesh::terrain":
-          queue.push(terrain(entry.res, this, this.treePositions));
+          queue.push(terrain(this, entry.res, this.treePositions, null));
           resourses.delete(entry);
           break;
         case "mesh::lstr":
-          lstr_data[0] = entry.res;
+          lstr_meshes[0] = entry.res;
           resourses.delete(entry); 
           break;
         case "mesh::flkr":
-          flkr_data[0] = entry.res;
+          flkr_meshes[0] = entry.res;
           resourses.delete(entry); 
           break;
         case "mesh::spear":
-          flkr_data[1] = entry.res;
+          flkr_meshes[1] = entry.res;
           resourses.delete(entry); 
           break;
       }
@@ -152,8 +152,10 @@ export default class BasicScene extends Scene {
 
     await Promise.all(queue);
 
-    FKLR(this, flkr_data, flkr_textures);
-    LSTR(this, lstr_data, lstr_textures);
+    drone(new ArrayBuffer(0), this);
+
+    FKLR(this, flkr_meshes, flkr_textures);
+    LSTR(this, lstr_meshes, lstr_textures);
 
     for (const entry of resourses) {
       switch (entry.name) {
@@ -163,7 +165,7 @@ export default class BasicScene extends Scene {
 
           queue.push(container(id, entry.res, this)); 
           queue.push(pillars(this, id, entry.res, banr_textures));
-          // barrierQueue.push(latern(id, entry.res, this));
+          queue.push(latern(id, entry.res, this));
           queue.push(thorns(id, entry.res, this, {
             outPositions: this.spikePositions,
             pickedPositions: this.treePositions,
@@ -176,43 +178,16 @@ export default class BasicScene extends Scene {
       }
     }
 
-    this.onpass.add(() => {
-
-      for ( const f of this.phyQueue ) f();
-
-      const pos = this.actor.camera.position;
-
-      for (let i = 0; i < this.actor.camera.position.length; i++) {
-
-        const abs_pos = Math.abs(pos[ i ]);
-
-        if (abs_pos >= warpRange) pos[ i ] = abs_pos * -1 * warpRange;
-
+    if ( import.meta.env.DEV ) addEventListener("keydown", event => {
+      if (event.key === "1" ) {
+        this.sun.needsUpdate = !this.sun.needsUpdate;
+      } else if ( event.key === "2" ) {
+        this.sun.debugCascade = !this.sun.debugCascade;
+      } else if ( event.key === "3" ) {
+        Scene.LIGHT_PASS = !Scene.LIGHT_PASS;
+      } else if ( event.key === "4" ) {
+        Scene.SHADOW_PASS = !Scene.SHADOW_PASS;
       }
-
-      const observers = this.sun.observers;
-      const origin = [0,0,0] as Ortho.vec3;
-
-      for ( let i = 0; i < observers.length; i++ ) {
-
-        const observer = observers[i];
-
-        const offset = 512 >> 2 * i;
-  
-        Ortho.vec3.scale(origin, this.actor.camera.direction, offset);
-        Ortho.vec3.mul(origin, origin, [1,0,1]);
-        Ortho.vec3.add(origin, this.actor.camera.position, origin);
-        Ortho.vec3.add(observer.position, [
-          500 * Math.cos(this.renderer.info.currentFrame / 25_000),
-          500,
-          500 * Math.sin(this.renderer.info.currentFrame / 25_000),
-        ], origin);
-        
-        observer.target.set(origin);
-        observer.update();
-
-      }
-
     });
 
     await Promise.all(queue);

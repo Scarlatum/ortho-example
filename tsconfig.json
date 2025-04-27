@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
+    "strict": true,
     "target": "ESNext",
-    "useDefineForClassFields": true,
     "module": "ESNext",
     "lib": [
       "ESNext", 
@@ -9,23 +9,24 @@
       "DOM.Iterable", 
       "ESNext.Disposable"
     ],
+    
     "skipLibCheck": true,
-
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
-    "isolatedModules": true,
-    "skipDefaultLibCheck": true,
-    "disableSolutionSearching": false,
-    "diagnostics": false,
-    "downlevelIteration": false,
-    "incremental": true,
-    "moduleDetection": "force",
+    "noCheck": false,
     "noEmit": true,
 
-    "strict": true,
+    "incremental": true,
+    "isolatedModules": true,
+    "skipDefaultLibCheck": true,
+    "downlevelIteration": false,
+    "moduleDetection": "force",
+    
     "noUnusedLocals": false,
+    "noImplicitOverride": true,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
+
     "types": [
       "@webgpu/types",
       "ortho"

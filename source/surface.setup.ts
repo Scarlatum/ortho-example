@@ -1,9 +1,10 @@
 declare const surface: HTMLCanvasElement;
 
-surface.height = (surface.width = innerWidth) / (21 / 9);
+const scale = innerWidth / innerWidth;
+// const aspect = 21 / 9;
+const aspect = innerWidth / innerHeight;
 
-// surface.height = innerHeight;
-// surface.width = innerWidth;
+surface.height = (surface.width = innerWidth * scale) / aspect;
 
 addEventListener("click", () => {
   surface.addEventListener("mouseenter", () => {
@@ -16,12 +17,7 @@ addEventListener("click", () => {
 }, { once: true });
 
 addEventListener("resize", () => {
-  
-  surface.height = (surface.width = innerWidth) / (21 / 9);
-
-  // surface.height = innerHeight;
-  // surface.width = innerWidth;
-
+  surface.height = (surface.width = innerWidth * scale) / aspect;
 });
 
 addEventListener("keydown", event => {

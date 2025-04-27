@@ -5,20 +5,20 @@ import { EntityType, PhyQueueElement } from "./workers/phy.shared"
 
 import BaseScene from "./scenes/cyber.scene"
 
-const phy = new Worker(new URL("./workers/phy.worker.ts", import.meta.url), { type: "module" });
-const phyQueue = new Set<PhyQueueElement>();
-
 import "./surface.setup";
 
 declare const surface: HTMLCanvasElement;
 
 const [ device, adapter, context ] = await Renderer.getSetup(surface);
 
+Scene.LIGHT_PASS = false;
+// Scene.SHADOW_PASS = false;
+
 const renderer = new Renderer(device, context);
 const scene = new BaseScene(renderer);
 
-// Scene.LIGHT_PASS = false;
-// Scene.SHADOW_PASS = false;
+const phy = new Worker(new URL("./workers/phy.worker.ts", import.meta.url), { type: "module" });
+const phyQueue = new Set<PhyQueueElement>();
 
 phy.addEventListener("message", async event => {
 
@@ -26,6 +26,10 @@ phy.addEventListener("message", async event => {
     case "preparations":
     
       scene.hitpos = event.data.payload;
+
+			await scene.setupScene();
+
+			renderer.addScene(scene).render();
 
       phy.postMessage(phyQueue);
 
@@ -41,8 +45,6 @@ phy.addEventListener("message", async event => {
   }
 
 });
-
-scene.setupScene().then(x => renderer.addScene(x).render());
 
 function createPhyBuffer<P>(type: EntityType, size: number = 0, payload?: P) {
 

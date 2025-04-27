@@ -24,14 +24,13 @@ export default async function(
     textures: null,
   }, scene.renderer.materials.repo.get(1)!, {
     instaces: 30,
-    shadow: { cast: true, recieve: true },
     state: Array.from({ length: 30 }, () => {
 
       const x = -500 + 1000 * Math.random();
       const z = -500 + 1000 * Math.random();
   
       const pos = [ x, 0, z ] as vec3;
-      const scl = [ pillarSideSize, 300, pillarSideSize * 2.0 ] as vec3;
+      const scl = [ pillarSideSize, 100 + 400 * Math.random(), pillarSideSize * 2.0 ] as vec3;
       const mdl = mat4.fromRotationTranslationScale(mat4.create(), q, pos, scl);
   
       return Object.seal({
@@ -91,14 +90,16 @@ export default async function(
 
   if ( true ) { // Display
 
-    const width = pillarSideSize - 1;
+    const width = pillarSideSize * 2.0 - 5.0;
 
     // const light = new PointLight();
 
     const entity = await Creation.create(Symbol("plane mesh"), {
       geometry: makePlane(),
       textures,
-    }, scene.renderer.materials.repo.get(0)!);
+    }, scene.renderer.materials.repo.get(0)!, {
+      shadow: { cast: false, recieve: false }
+    });
 
     using model = entity.mesh.model;
 
@@ -109,13 +110,7 @@ export default async function(
     closestPillar.pos[0] -= pillarSideSize + 0.25;
     closestPillar.pos[1] += 75.0;
 
-    const pos = vec3.clone(closestPillar.pos);
     const rot = quat.create();
-
-    // light.visible   = true;
-    // light.color		  = [0.5,0.4,0.0];
-    // light.range 	  = 64.0;
-    // light.position  = vec3.sub(pos, pos, [32,0,0]);
 
     const { height: texHeight, width: texWidth } = textures.diffuse[0];
 
@@ -131,15 +126,10 @@ export default async function(
         ]
     );
 
-    scene.drawQueue.add(entity.mesh);
-    // scene.onpass.add(() => {
-
-    //   light.range = 16 + 8 * (Math.sin(scene.renderer.info.currentFrame / 60) * 0.5 + 0.5);
-
-    // })
+    scene.add(entity.mesh);
 
   }
 
-  scene.drawQueue.add(pillar.mesh);
+  scene.add(pillar.mesh);
 
 }

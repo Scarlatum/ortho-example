@@ -56,7 +56,7 @@ export async function latern(sym: symbol, data: ArrayBuffer, scene: SceneInterfa
 
     });
 
-    scene.drawQueue.add(mesh);
+    scene.add(mesh);
 
   }
 

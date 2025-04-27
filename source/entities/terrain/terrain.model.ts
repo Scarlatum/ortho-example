@@ -1,18 +1,18 @@
 import { Renderer, Creation } from "ortho";
-import { mat4, quat, vec3 } from "gl-matrix";
+import { mat4, vec3 } from "gl-matrix";
 
 import { phyQueue } from "~/main"
 
 import BasicScene from "~/scenes/cyber.scene";
 import { TerrainWTO } from "./terrain.shared";
 import { EntityType } from "~/workers/phy.shared";
-import { InstancedMesh } from "ortho/source/mesh/mesh.model";
-import { DirectionLight, LightCascade } from "ortho/source/renderer/light/light.model";
+import { TextureContainer } from "ortho/source/entity/creation.entity";
 
 export async function terrain(
-  data: ArrayBuffer, 
   scene: BasicScene,
+  data: ArrayBuffer, 
   positions: Array<vec3>,
+  texture: Nullable<TextureContainer>,
 ) {
 
   const sym = Symbol("terrain");
@@ -21,10 +21,8 @@ export async function terrain(
 
   const terrain = await Creation.create(sym, {
     geometry: Renderer.dec.decode(data),
-    textures: null,
-    // textures: [
-    //   {["./textures/marble.png"]: []}
-    // ]
+    textures: texture,
+    // textures: null,
   }, material, {
     instaces: 1,
     shadow: { cast: false, recieve: true }
@@ -55,41 +53,7 @@ export async function terrain(
 
   setPositions(vertexes, model, positions);
 
-  // for ( const [ model, index ] of terrain.mesh.writeModels() ){
-
-  //   switch (index) {
-  //     case 0:
-
-  //       mat4.translate(model, model, [ 0, -80, 0 ]);
-  //       mat4.scale(model, model, [
-  //         500,
-  //         500,
-  //         500,
-  //       ]);
-
-  //       phyQueue.add({
-  //         type: EntityType.Terrain,
-  //         payload: {
-  //           model,
-  //           vertexes,
-  //         } satisfies TerrainWTO
-  //       });
-
-  //       setPositions(vertexes, model, positions);
-
-  //       break;
-  //     case 1: 
-
-  //       const q = quat.create();
-
-  //       quat.rotateX(q, q, Math.PI);
-  //       mat4.fromRotationTranslationScale(model, q, [0,250,0], [500,500,500])
-
-  //   }
-
-  // }
-
-  scene.drawQueue.add(terrain.mesh);
+  scene.add(terrain.mesh);
 
 }
 

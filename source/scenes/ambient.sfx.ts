@@ -43,10 +43,10 @@ export function ambient(audioData: ArrayBuffer, scene: SceneInterface) {
           scene.actor.camera.position
       ));
 
-      pan -= (pan - norm[ 2 ]) * 0.025;
+      // pan -= (pan - norm[ 2 ]) * 0.025;
 
-      gainNode.gain.value   = 3.0;
-      stereoNode.pan.value  = Math.max(-0.5, Math.min(0.5, pan));
+      // gainNode.gain.value   = 3.0;
+      // stereoNode.pan.value  = Math.max(-0.5, Math.min(0.5, pan));
 
     });
 

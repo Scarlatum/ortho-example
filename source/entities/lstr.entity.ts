@@ -4,7 +4,7 @@ import { SceneInterface } from "ortho/source/interfaces/scene.interface";
 import { LightCascade } from "ortho/source/renderer/light/light.model";
 import { Renderer } from "ortho/source/renderer/renderer.model";
 
-export async function lstr(scene: SceneInterface, meshes: [ ArrayBuffer, ArrayBuffer ], textures: TextureContainer) {
+export async function lstr(scene: SceneInterface, meshes: [ ArrayBuffer ], textures: TextureContainer) {
 
   const entity = await Creation.create(Symbol("LSTR"), {
     geometry: Renderer.dec.decode(meshes[0]),
@@ -23,6 +23,6 @@ export async function lstr(scene: SceneInterface, meshes: [ ArrayBuffer, ArrayBu
   mat4.translate(model, model, [ 0, -8.9, 0 ]);
   mat4.rotateY(model, model, Math.PI / -3);
 
-  scene.drawQueue.add(entity.mesh);
+  scene.add(entity.mesh);
 
 }

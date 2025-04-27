@@ -46,7 +46,7 @@ export async function plane(data: ArrayBuffer, scene: SceneInterface) {
     vec3.transformMat4(box.a, box.a, model);
     vec3.transformMat4(box.b, box.b, model);
 
-    scene.drawQueue.add(entity.mesh);
+    scene.add(entity.mesh);
 
     chunks.add(entity);
 

@@ -1,5 +1,5 @@
 import { mat4, vec3 } from "gl-matrix";
-import { Creation } from "ortho/source/entity/creation.entity";
+import { Creation, TextureContainer } from "ortho/source/entity/creation.entity";
 import { PointLight } from "ortho/source/renderer/light/point.model";
 import { Renderer } from "ortho/source/renderer/renderer.model";
 import { createPhyBuffer } from "~/main";
@@ -9,7 +9,12 @@ import { CarPhyBufferSize, CarWTO } from "./car.shared";
 import { EntityType } from "~/workers/phy.shared";
 import { DirectionLight } from "ortho";
 
-export async function cars(sym: symbol, res: ArrayBuffer, scene: BasicScene) {
+export async function cars(
+  scene: BasicScene,
+  sym: symbol, 
+  res: ArrayBuffer,
+  textures: Nullable<TextureContainer> = null, 
+) {
 
   { // Static
 
@@ -23,7 +28,7 @@ export async function cars(sym: symbol, res: ArrayBuffer, scene: BasicScene) {
 
     const entity = await Creation.create(sym, {
       geometry: Renderer.dec.decode(res),
-      textures: null,
+      textures,
     }, scene.renderer.materials.repo.get(1)!, {
       instaces: 1,
       shadow: { cast: true, recieve: true }
@@ -62,7 +67,7 @@ export async function cars(sym: symbol, res: ArrayBuffer, scene: BasicScene) {
       
     })
 
-    scene.drawQueue.add(entity.mesh);
+    scene.add(entity.mesh);
 
   }
 
@@ -72,7 +77,7 @@ export async function cars(sym: symbol, res: ArrayBuffer, scene: BasicScene) {
 
     const entity = await Creation.create(sym, {
       geometry: Renderer.dec.decode(res),
-      textures: null,
+      textures,
     }, scene.renderer.materials.repo.get(1)!, {
       instaces: amount,
       state: Array.from({ length: amount }, () => {
@@ -89,12 +94,12 @@ export async function cars(sym: symbol, res: ArrayBuffer, scene: BasicScene) {
       }) 
     });
 
-    const baseAlt = 80;
+    const baseAlt = 110;
 
     for (const [ model, index ] of entity.mesh.writeModels()) {
       mat4.translate(model, model, [
         entity.state[ index ].col * 10,
-        baseAlt + entity.state[ index ].row * 20,
+        baseAlt + entity.state[ index ].row * 10,
         200 * Math.random(),
       ]);
     }
@@ -129,7 +134,7 @@ export async function cars(sym: symbol, res: ArrayBuffer, scene: BasicScene) {
 
     });
 
-    scene.drawQueue.add(entity.mesh);
+    scene.add(entity.mesh);
 
   }
 

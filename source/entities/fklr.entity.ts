@@ -14,18 +14,19 @@ export async function FKLR(
   const FLKR = await Creation.create(Symbol("FKLR"), {
     geometry: Renderer.dec.decode(meshes[0]),
     textures,
-  }, sharedMaterial, {
+  }, scene.renderer.materials.repo.get(0)!, {
     shadow: {
       cast: true,
       recieve: false,
       cascade: LightCascade.Close | LightCascade.Near
     },
     state: {
+      anchor: [0, 3, 10] as vec3,
       position: [0, 3, 10] as vec3
     }
   });
 
-  const SPEAR = await Creation.create(Symbol("FKLR"), {
+  const SPEAR = await Creation.create(Symbol("FKLR SPEAR"), {
     geometry: Renderer.dec.decode(meshes[1]),
     textures: null,
   }, sharedMaterial, {
@@ -38,8 +39,8 @@ export async function FKLR(
   mat4.translate(model, model, FLKR.state.position);
   mat4.rotateY(model, model, Math.PI);
 
-  scene.drawQueue.add(FLKR.mesh);
-  scene.drawQueue.add(SPEAR.mesh);
+  scene.add(FLKR.mesh);
+  scene.add(SPEAR.mesh);
 
   scene.onpass.add(() => {
 
@@ -62,6 +63,19 @@ export async function FKLR(
       ));
   
     }
+
+    using model = FLKR.mesh.model;
+
+    vec3.add(FLKR.state.position, FLKR.state.anchor, [
+      0,
+      Math.pow(Math.sin(scene.renderer.info.currentFrame / 150) * 1, 2),
+      0,
+    ])
+
+    mat4.identity(model)
+    mat4.translate(model, model, FLKR.state.position);
+    mat4.rotateY(model, model, Math.PI);
+
   });
 
 }

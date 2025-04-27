@@ -8,10 +8,8 @@ export function terrain(
   { vertexes, model }: TerrainWTO,
 ) {
 
-  const indexlen = vertexes.length / 3;
-
   const v = new Float32Array(vertexes.length);
-  const abobas = new Uint32Array(Array.from({ length: indexlen }, (_,i) => i));
+  const abobas = new Uint32Array(Array.from({ length: vertexes.length / 3 }, (_,i) => i));
 
   for ( var i = 0; i < vertexes.length; i += 3 ) {
 

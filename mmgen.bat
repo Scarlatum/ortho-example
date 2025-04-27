@@ -1,1 +1,0 @@
-for %%f in (./public/image/*.webp) do mkdir .\\public\\image\\%%~nf && for %%s in (1024,512,256,128,64) do dwebp .\\public\\image\\%%f -resize 0 %%s -o .\\public\\image\\%%~nf\\%%s.png
