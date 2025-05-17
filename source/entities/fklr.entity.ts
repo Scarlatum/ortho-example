@@ -38,6 +38,7 @@ export async function FKLR(
 
   mat4.translate(model, model, FLKR.state.position);
   mat4.rotateY(model, model, Math.PI);
+  mat4.scale(model, model, [ 3,3,3 ]);
 
   scene.add(FLKR.mesh);
   scene.add(SPEAR.mesh);
@@ -75,6 +76,7 @@ export async function FKLR(
     mat4.identity(model)
     mat4.translate(model, model, FLKR.state.position);
     mat4.rotateY(model, model, Math.PI);
+    mat4.scale(model, model, [ 1.5,1.5,1.5 ]);
 
   });
 

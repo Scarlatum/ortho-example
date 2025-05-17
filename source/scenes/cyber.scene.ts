@@ -64,7 +64,7 @@ export default class BasicScene extends Scene {
     ], [
       /* wgsl */`
 
-        let mist = noise(in.world.yz / 100 + params.tick / 600) * MIST_DENSITY;
+        let mist = noise(in.world.yz / 300 + params.tick / 1200) * MIST_DENSITY;
         let fog = abs(dist) / FOG_DISTANCE * FOG_DENSITY;
 
         color = mix(color, ambt, fog * 2) + mist;

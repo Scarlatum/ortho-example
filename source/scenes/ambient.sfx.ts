@@ -21,18 +21,20 @@ export function ambient(audioData: ArrayBuffer, scene: SceneInterface) {
     const source = auctx.createBufferSource();
     const data = await auctx.decodeAudioData(audioData);
 
-    const convolver = createReverb(auctx, 10);
+    const convolver = createReverb(auctx, 4);
 
     source.buffer = data;
     source.loop = true;
     source
-      .connect(convolver)
+      // .connect(convolver)
       .connect(gainNode)
       .connect(stereoNode)
       .connect(auctx.destination)
       ;
 
     source.start();
+
+    gainNode.gain.value = 5.0;
 
     scene.onpass.add(() => {
 

@@ -30,7 +30,7 @@ export default async function(
       const z = -500 + 1000 * Math.random();
   
       const pos = [ x, 0, z ] as vec3;
-      const scl = [ pillarSideSize, 100 + 400 * Math.random(), pillarSideSize * 2.0 ] as vec3;
+      const scl = [ pillarSideSize, 100 + 500 * Math.random(), pillarSideSize ] as vec3;
       const mdl = mat4.fromRotationTranslationScale(mat4.create(), q, pos, scl);
   
       return Object.seal({
