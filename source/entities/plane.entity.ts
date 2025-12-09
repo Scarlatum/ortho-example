@@ -54,7 +54,7 @@ export async function plane(data: ArrayBuffer, scene: SceneInterface) {
 
   scene.onpass.add(() => {
     for ( const x of chunks ) {
-      x.mesh.drop = !scene.actor.camera.onFront(x.mesh.edges);
+      x.mesh.drop = !scene.camera.onFront(x.mesh.edges);
     }
   })
 

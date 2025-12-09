@@ -21,34 +21,38 @@ export function ambient(audioData: ArrayBuffer, scene: SceneInterface) {
     const source = auctx.createBufferSource();
     const data = await auctx.decodeAudioData(audioData);
 
-    const convolver = createReverb(auctx, 4);
+    const convolver = createReverb(auctx, 1);
 
     source.buffer = data;
     source.loop = true;
     source
-      // .connect(convolver)
       .connect(gainNode)
+      .connect(convolver)
       .connect(stereoNode)
       .connect(auctx.destination)
       ;
 
     source.start();
 
-    gainNode.gain.value = 5.0;
+    let prevNorm = [0,0,0] as vec3;
 
     scene.onpass.add(() => {
 
       const norm = vec3.normalize(
         [ 0, 0, 0 ], 
         vec3.sub([ 0, 0, 0 ], 
-          scene.actor.camera.target, 
-          scene.actor.camera.position
+          scene.camera.target, 
+          scene.camera.position
       ));
 
-      // pan -= (pan - norm[ 2 ]) * 0.025;
+      let d = vec3.distance(prevNorm, norm);
 
-      // gainNode.gain.value   = 3.0;
-      // stereoNode.pan.value  = Math.max(-0.5, Math.min(0.5, pan));
+      pan -= (pan - norm[ 2 ]) * 0.05;
+        
+      prevNorm = [ ...norm ];
+
+      gainNode.gain.value   = 2.0;
+      stereoNode.pan.value  = Math.max(-0.9, Math.min(0.9, pan));
 
     });
 

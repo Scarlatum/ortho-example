@@ -124,7 +124,7 @@ export async function cars(
           return vec3.transformMat4([0,0,0], x, model);
         });
 
-        const visible = scene.actor.camera.onFront(current);
+        const visible = scene.camera.onFront(current);
         
         entity.mesh.visibilityIndexes[index] = Number(visible);
 

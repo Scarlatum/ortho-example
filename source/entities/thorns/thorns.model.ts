@@ -124,7 +124,7 @@ export default async function(
 
   scene.onpass.add(() => {
 
-    const camera = scene.actor.camera;
+    const camera = scene.camera;
 
     for ( var i = 0; i < payload.outPositions.length; i++ ) {
 

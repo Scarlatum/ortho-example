@@ -27,24 +27,24 @@ phy.addEventListener("message", async event => {
     
       scene.hitpos = event.data.payload;
 
-			await scene.setupScene();
-
-			renderer.addScene(scene).render();
-
       phy.postMessage(phyQueue);
 
       break;
     case "ready":
 
       phy.postMessage({ spec: "preparations", payload: {
-        position: scene.actor.camera.position,
-        direction: scene.actor.camera.direction,
+        position: scene.camera.position,
+        direction: scene.camera.direction,
       }});
 
       break;
   }
 
 });
+
+await scene.setupScene();
+
+renderer.addScene(scene).render();
 
 function createPhyBuffer<P>(type: EntityType, size: number = 0, payload?: P) {
 

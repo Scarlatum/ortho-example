@@ -16,15 +16,15 @@ export default async function(
   textures: TextureContainer,
 ) {
 
-  const pillarSideSize = 15;
+  const pillarSideSize = 30;
   const q = quat.identity([0,0,0,0]);
 
   const pillar = await Creation.create(sym, {
     geometry: Renderer.dec.decode(mesh),
     textures: null,
   }, scene.renderer.materials.repo.get(1)!, {
-    instaces: 30,
-    state: Array.from({ length: 30 }, () => {
+    instaces: 10,
+    state: Array.from({ length: 10 }, () => {
 
       const x = -500 + 1000 * Math.random();
       const z = -500 + 1000 * Math.random();
@@ -68,7 +68,7 @@ export default async function(
   
     scene.onpass.add(() => {
   
-      const camera = scene.actor.camera;
+      const camera = scene.camera;
   
       for ( var i = 0; i < pillar.state.length; i++ ) {
   
@@ -90,7 +90,7 @@ export default async function(
 
   if ( true ) { // Display
 
-    const width = pillarSideSize * 2.0 - 5.0;
+    const width = pillarSideSize - 5.0;
 
     // const light = new PointLight();
 

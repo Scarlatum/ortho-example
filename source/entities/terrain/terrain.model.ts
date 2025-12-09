@@ -22,7 +22,6 @@ export async function terrain(
   const terrain = await Creation.create(sym, {
     geometry: Renderer.dec.decode(data),
     textures: texture,
-    // textures: null,
   }, material, {
     instaces: 1,
     shadow: { cast: false, recieve: true }

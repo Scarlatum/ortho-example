@@ -1,4 +1,4 @@
-import { ProceduredMaterial, Renderer, Scene, Ortho } from "ortho"
+import { ProceduredMaterial, Renderer, Scene, Ortho, BlurPass, SSAOPass } from "ortho"
 import { parallelFetch } from "ortho/source/utils/networking.utils.ts"
 
 import { latern } from "~/entities/latern.entity"
@@ -15,6 +15,7 @@ import thorns from "~/entities/thorns/thorns.model";
 import { ambient } from "./ambient.sfx";
 import { drone } from "~/entities/drone/drone.model";
 import { Creation } from "ortho/source/entity/creation.entity";
+import { Actor } from "ortho/source/entity/actor.entity";
 
 type AssetLabels = "audio" | "mesh" | "texture";
 
@@ -35,11 +36,12 @@ export default class BasicScene extends Scene {
     // Textures
     "texture::lstr::diffuse": new URL("~/assets/textures/lstr.png", import.meta.url),
     "texture::fklr::diffuse": new URL("~/assets/textures/fklr.png", import.meta.url),
-    "texture::banr::diffuse": new URL("~/assets/textures/banners/002.png", import.meta.url),
-    // "texture::car::diffuse": new URL("~/assets/textures/car.png", import.meta.url),
-		// "texture::terrain::diffuse": new URL("~/assets/textures/terrain.webp", import.meta.url),
+    "texture::banr::diffuse": new URL("~/assets/textures/banners/003.webp", import.meta.url),
+    "texture::car::diffuse": new URL("~/assets/textures/car.png", import.meta.url),
+		"texture::terrain::diffuse": new URL("~/assets/textures/terrain.webp", import.meta.url),
   } satisfies Record<`${ AssetLabels }::${ string }`, URL>
 
+  private actor: Actor;
   private treePositions = Array<Ortho.vec3>();
   private spikePositions = Array<Ortho.vec3>();
 
@@ -47,7 +49,7 @@ export default class BasicScene extends Scene {
 
   constructor(override renderer: Renderer) {
 
-    super(renderer, [
+    const materials = [
       new ProceduredMaterial(0, /* wgsl */`
         color = textureSample(texture, textureSampler, in.uv).rgb;
       `),
@@ -58,28 +60,47 @@ export default class BasicScene extends Scene {
         color = textureSample(
           texture, 
           textureSampler, 
-          fract(in.uv * 25.0)
+          fract(in.uv * 8.0 + (fbm(in.world.xz * 0.005) * 0.25))
         ).rgb;
       `),
-    ], [
+      new ProceduredMaterial(4, /* wgsl */`
+
+        // let clouds_shadow = noise(in.world.xz / 300);
+
+        color = vec3f(0.75);
+
+      `),
+    ];
+
+    const fragments = [
       /* wgsl */`
 
-        let mist = noise(in.world.yz / 300 + params.tick / 1200) * MIST_DENSITY;
+        // let mist = noise(in.world.yz / 300 + params.tick / 1200) * MIST_DENSITY;
+
         let fog = abs(dist) / FOG_DISTANCE * FOG_DENSITY;
 
-        color = mix(color, ambt, fog * 2) + mist;
+        color = mix(color, ambt, fog * 2);
 
       `,
-    ]);
+    ]
+
+    super(renderer, materials, fragments);
+
+    this.actor = new Actor(this, this.camera);
 
     // Attach blur post effect
     // this.renderer.addPostPass(new BlurPass(renderer, {
     //   iterations: 1
     // }));
 
+    // Attach SSAO pass
+    // this.renderer.addPostPass(new SSAOPass(renderer));
+
   }
 
   override async setupScene() {
+
+    this.actor.applyListeners(this.renderer.context.canvas as HTMLCanvasElement);
 
     const resourses = await parallelFetch(Object.entries(BasicScene.resources))
 
@@ -91,8 +112,8 @@ export default class BasicScene extends Scene {
     const flkr_textures = Creation.createTextureContainer();
     const lstr_textures = Creation.createTextureContainer();
     const banr_textures = Creation.createTextureContainer();
-    // const car_textures  = Creation.createTextureContainer();
-		// const terrain_textures = Creation.createTextureContainer();
+    const car_textures  = Creation.createTextureContainer();
+		const terrain_textures = Creation.createTextureContainer();
 
     for ( const entry of resourses ) {
       switch (entry.name) {
@@ -176,6 +197,40 @@ export default class BasicScene extends Scene {
           break;
           
       }
+    }
+
+    { // Sun update
+
+      this.onpass.add(() => {
+
+        const time = this.renderer.info.currentFrame / 15_000;
+
+        for ( let i = 0; i < this.sun.observers.length; i++ ) {
+
+          const origin: Ortho.vec3 = [0,0,0];
+
+          const observer  = this.sun.observers[i];
+          const offset    = (512 >> 2 * i);
+
+          Ortho.vec3.mul(origin, this.camera.direction, [
+            offset + this.camera.aspect,
+            0,
+            offset,
+          ]);
+
+          Ortho.vec3.add(origin, this.camera.position, origin);
+          Ortho.vec3.add(observer.position, [
+            500 * Math.sin(time),
+            500,
+            500 * Math.cos(time),
+          ], origin);
+          
+          observer.target.set(origin);
+
+        }
+
+      })
+
     }
 
     if ( import.meta.env.DEV ) addEventListener("keydown", event => {

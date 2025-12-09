@@ -11,8 +11,8 @@ export function drone(res: ArrayBuffer, scene: BasicScene) {
     type: EntityType.Drone,
     payload: {
       width: 1, height: 2,
-      pos: scene.actor.camera.position,
-      vec: scene.actor.camera.moveVector,
+      pos: scene.camera.position,
+      vec: scene.camera.moveVector,
     } satisfies DroneWTO
   });
 
