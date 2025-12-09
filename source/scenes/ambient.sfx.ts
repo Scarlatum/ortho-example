@@ -49,7 +49,7 @@ export function ambient(audioData: ArrayBuffer, scene: SceneInterface) {
 
       pan -= (pan - norm[ 2 ]) * 0.05;
         
-      prevNorm = [ ...norm ];
+      prevNorm = [ ...norm ] as vec3; 
 
       gainNode.gain.value   = 2.0;
       stereoNode.pan.value  = Math.max(-0.9, Math.min(0.9, pan));

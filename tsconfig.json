@@ -7,7 +7,7 @@
       "ESNext", 
       "DOM", 
       "DOM.Iterable", 
-      "ESNext.Disposable"
+      "ESNext.Disposable",
     ],
     
     "skipLibCheck": true,
